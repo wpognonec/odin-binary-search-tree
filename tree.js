@@ -2,7 +2,7 @@ function Node(data, left = null, right = null) {
   return { data, left, right }
 }
 
-class Tree {
+export default class Tree {
   constructor(items) {
     let sorted = Array.from(new Set(items)).sort((a, b) => a - b)
     this.root = this.buildTree(sorted, 0, sorted.length - 1)
@@ -75,26 +75,83 @@ class Tree {
     }
     return curr
   }
+
+  levelOrder(callback) {
+    if (typeof callback !== "function") {
+      throw new Error("Please provide a callback function")
+    }
+
+    let q = [this.root]
+    while (q.length) {
+      let node = q.splice(0, 1)[0]
+      callback(node)
+      if (node?.left) q.push(node.left)
+      if (node?.right) q.push(node.right)
+    }
+  }
+
+  inOrder(callback, node = this.root) {
+    if (typeof callback !== "function") {
+      throw new Error("Please provide a callback function")
+    }
+    if (!node) return
+    this.inOrder(callback, node.left)
+    callback(node)
+    this.inOrder(callback, node.right)
+  }
+
+  postOrder(callback, node = this.root) {
+    if (typeof callback !== "function") {
+      throw new Error("Please provide a callback function")
+    }
+    if (!node) return
+    this.postOrder(callback, node.left)
+    this.postOrder(callback, node.right)
+    callback(node)
+  }
+
+  preOrder(callback, node = this.root) {
+    if (typeof callback !== "function") {
+      throw new Error("Please provide a callback function")
+    }
+    if (!node) return
+    callback(node)
+    this.preOrder(callback, node.left)
+    this.preOrder(callback, node.right)
+  }
+
+  height(node) {
+    if (!node) return 0
+    if (!node.left && !node.right) return -1
+    let leftHeight = this.height(node.left)
+    let rightHeight = this.height(node.right)
+
+    return 1 + Math.max(leftHeight, rightHeight)
+  }
+
+  depth(target, root = this.root, currentDept = 0) {
+    if (!root) return -1
+    if (root == target) return currentDept
+    let leftDepth = this.depth(target, root.left, currentDept + 1)
+    if (leftDepth != -1) return leftDepth
+    let rightDepth = this.depth(target, root.right, currentDept + 1)
+    if (rightDepth != -1) return rightDepth
+    return -1
+  }
+
+  isBalanced() {
+    let bool = true
+    this.inOrder((n) => {
+      let l = this.height(n.left)
+      let r = this.height(n.right)
+      if (Math.abs(l - r) > 1) bool = false
+    })
+    return bool
+  }
+
+  rebalance() {
+    let sorted = []
+    this.inOrder((n) => sorted.push(n.data))
+    this.root = this.buildTree(sorted, 0, sorted.length - 1)
+  }
 }
-
-let t = new Tree([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324])
-// t.prettyPrint()
-// t.remove(8)
-// t.prettyPrint()
-console.log(t.find(24))
-
-// Iterative insert
-// let node = this.root
-// while (true) {
-//   if (item === node.data) return
-//   if (item < node.data && !node.left) {
-//     node.left = Node(item)
-//     return
-//   }
-//   if (item > node.data && !node.right) {
-//     node.right = Node(item)
-//     return
-//   }
-//   if (item < node.data) node = node.left
-//   if (item > node.data) node = node.right
-// }
